@@ -109,7 +109,8 @@
 
              //Анализирует, в какое место попал клик мышкой. Если есть попадание в квадратик, то возвращает true
              shot  (e) {
-                 let x = e.pageX, y = e.pageY,x16,y16,posInArr;
+
+                 let x =e.offsetX, y = e.offsetY,x16,y16,posInArr;
                  for (let i in this.arr) {
                      if (this.arr[i].number==16){
                          x16=this.arr[i].x;
@@ -118,8 +119,8 @@
                      }
                  }
                 for (let i=0; i<=this.arr.length-1; i++) {
-                    if (x-8 > this.arr[i].x && x-8 < this.arr[i].x + this.arr[i].w &&
-                        y-25 > this.arr[i].y && y-25 < this.arr[i].y + this.arr[i].h &&
+                    if (x > this.arr[i].x && x < this.arr[i].x + this.arr[i].w &&
+                        y> this.arr[i].y && y < this.arr[i].y + this.arr[i].h &&
                         this.arr[i].visible==true) {
                         if ((this.arr[i].x-x16==110 || x16-this.arr[i].x==110)&&this.arr[i].y==y16){
                             this.arr[i].deltaX=this.arr[i].x-x16;
@@ -160,7 +161,6 @@
                 16:[340,340]
             }
             this.numbersOfPositions = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
-            this.buttonStop = document.getElementById('stop');
             this.buttonStart = document.getElementById('start');
             }
         }
@@ -176,9 +176,6 @@
 
             // Реагирует на клик по игровому полю
             this.init.canvas.onclick=this.clickOnCanvas.bind(this);
-
-            // Реагирует на нажатие кнопки "Стоп",
-            this.init.buttonStop.addEventListener('click', this.stopGame.bind(this));
        }
 
         startGame () {
@@ -186,6 +183,10 @@
                 this.init.arr =this.squares.creatSquars(this.init.arr,this.init.numbersOfPositions,this.init.positionsCoordinates);
                 this.animate.arr=this.init.arr;
                 this.animate.startDraw();
+            }
+            else {
+                this.stopGame();
+                this.startGame();
             }
         }
 
