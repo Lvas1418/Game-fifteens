@@ -1,10 +1,45 @@
 (function() {
+    /*
+      A lot of classes just to have more classes
+      No special meaning
 
+      got LIKE for canvas and cool smooth animation :)
+
+    */
+
+    /*
+      creatSquars and destructionSquars must be part of Game class
+      because it is your controller
+      this class has no meaning at all
+    */
     class Squares {
-
         //создает новые экземпляры квадратиков и помещает их в массив
+
+        /*
+          Do not change referenced structures!
+          Until your architecture assumes this action
+          Then you have to give corresponding name to your methods
+          e.g.: updateSomeArray, insertAdditionalData, etc...
+        */
         creatSquars  (arr,nop,pc) {
 
+            /*
+              Don't declare classes inside 
+              methods of other classes
+              it looks very weid
+
+              You don't use closures for nested classes and functions
+              So what was the reason you desided to declare them inside?:)
+              
+              Move function and classes declarations outside
+              make code cleaner, readable and reduce nesting
+            */
+
+            /*
+              Used only to be inherited once
+              No instances, no inheritance except LifeSquare
+              No reasons to exist :)
+            */
             //Конструктор для квадратиков
             class Square {
                 constructor (x,y,w,h) {
@@ -17,6 +52,7 @@
                     this.visible=true;
                 }
             }
+
             class LifeSquare extends Square {
                 constructor(x,y,w,h,n,p){
                     super(x,y,w,h);
@@ -25,6 +61,11 @@
                 }
             }
 
+            /*
+              Single use nested function declaration
+              You don't need this as a function
+              just a block of code inside creatSquars method
+            */
             // Перемешивает позиции квадратиков
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
@@ -33,26 +74,57 @@
                 }
                 return array;
             }
-            nop=shuffleArray(nop);
 
+            /*
+              Bad idea to change passed by reference array or object
+              such approach produces unclear and obscure flow
+
+              You change Init.numbersOfPositions here! Strict anti-pattern!
+
+              This assignment do nothing!
+              Because Init.numbersOfPositions, nop and array parameter inside shuffleArray
+              are referenced to the same structure
+            */
+            nop = shuffleArray(nop);
+
+            /*
+              Again - changing referenced array
+
+              'return arr' below has no meaning
+
+              Init.arr -> arr the same structure
+              you change it then return and reassign
+              it is the same as Init.arr = Init.arr!
+            */
             //Создаем экземпляры квадратиков и помещаем их в массив
             let num=0;
             for (let j=0;j<=3; j++) {
                 for( let i = 0; i <= 3; i++){
                   num++;
+                  /* Spaghetti */
                   arr.push( new LifeSquare(pc[nop[num-1]][0],pc[nop[num-1]][1],100,100,num,nop[num-1]));
-                  }
+                }
             }
             return arr;
         };
 
-            //Очищает массив с квадратиками
-            destructionSquars (arr){
-            for ( let i=0; i<=arr.length;i++)
-                arr.splice(0,arr.length);
-                return arr;
-            }
+        /*
+          The strangest method in your code! :D
+          Seems you were very tired when designed it!
 
+          What was the reason to loop through array and splice ALL(!!!) items from array
+          if you could just do this.init.arr = [](!!!) below and don't use this method at all
+          
+          fastes way to clean array and keep reference:
+
+          arr.length = 0;
+        */
+        //Очищает массив с квадратиками
+        destructionSquars (arr) {
+          for ( let i=0; i <= arr.length; i++)
+              arr.splice(0, arr.length);
+              return arr;
+        }
     }
 
      // Анимация
@@ -64,6 +136,11 @@
                   this.stopId=undefined;
               }
 
+              /*
+                spaghetti
+                deep nesting
+                hard to understand what is going on
+              */
               // Отрисовывает видимые квадратики
               startDraw (){
                 this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientWidth);
@@ -92,6 +169,10 @@
               this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientWidth);
           }
 
+          /*
+            shorter, cleaner and do less iterations in case of 'false'
+            return !this.arr.some(item => item.number != item.position)
+          */
           // Проверяет все ли квадратики на своих местах
           mayBeWin (){
               if (this.arr.every((item)=>{return item.number==item.position;})){
@@ -107,6 +188,12 @@
                 this.ctx.fillText("You win", this.canvas.width/2, this.canvas.height/2);
             }
 
+              /*
+                So spaghetti :)
+                Don't have enery to parse this
+
+                Some differential math here...
+              */
              //Анализирует, в какое место попал клик мышкой. Если есть попадание в квадратик, то возвращает true
              shot  (e) {
 
@@ -137,8 +224,12 @@
                 }
             }
           }
+    /*
+      No reason to declare a class
+      just simple object
+    */
     class Init {
-        constructor (){
+        constructor () {
             this.canvas = document.getElementById('canvas');
             this.ctx = canvas.getContext('2d');
             this.arr = [];
@@ -167,21 +258,35 @@
 
     class Game {
         constructor () {
-            this.init= new Init();
+            this.init = new Init();
             this.squares=new Squares();
             this.animate= new Animate(this.init.ctx,this.init.canvas);
 
             // Реагирует на нажатие кнопки "Старт",
             this.init.buttonStart.addEventListener('click', this.startGame.bind(this));
+            /*
+                                            /\
+                Nice DOM Level 2 event here |
+              
+                and                           WHY?
 
+                Ugly DOM Level 0 event here \
+                                            \/
+            */
             // Реагирует на клик по игровому полю
-            this.init.canvas.onclick=this.clickOnCanvas.bind(this);
+            this.init.canvas.onclick = this.clickOnCanvas.bind(this);
        }
 
         startGame () {
             if (this.init.arr.length==0){
-                this.init.arr =this.squares.creatSquars(this.init.arr,this.init.numbersOfPositions,this.init.positionsCoordinates);
-                this.animate.arr=this.init.arr;
+                this.init.arr = this.squares.creatSquars(this.init.arr,this.init.numbersOfPositions,this.init.positionsCoordinates);
+                /* 
+                  init.arr, animate.arr all the same reference
+                  and all is changed inside Squares.creatSquars
+
+                  so entangled
+                */
+                this.animate.arr = this.init.arr;
                 this.animate.startDraw();
             }
             else {
@@ -192,17 +297,25 @@
 
         stopGame  () {
             this.animate.stopDraw();
-            this.init.arr=this.squares.destructionSquars(this.init.arr);
+            /*
+              call of useless method
+              could do this.init.arr = [];
+
+              but as far as you linked it with this.animate.arr (if you remember)
+              better to to this.init.arr.length = 0;
+            */
+            this.init.arr = this.squares.destructionSquars(this.init.arr);
         };
 
         clickOnCanvas  (e) {
                if (this.animate.shot(e)){
                    if (this.animate.mayBeWin()){
-                       setTimeout(()=>{this.stopGame();this.animate.win();},1000);
+                       setTimeout(()=>{this.stopGame(); this.animate.win();},1000);
                    }
                }
         };
     }
+
  new Game();
 
 }());
